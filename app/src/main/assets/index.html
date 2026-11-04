@@ -16,24 +16,41 @@
 </header>
 <div class="wrap">
 <section id="home">
- <div class="card"><div class="topline"><div><h2>Menu Utama</h2><div class="muted">Pilih jenis retribusi untuk mencatat pendapatan harian.</div></div><span class="pill">TAHUN 2026</span></div></div>
+<div class="card">
+    <div class="topline">
+        <div>
+            <h2>Menu Utama</h2>
+            <div class="muted">Pilih tahun dan jenis retribusi untuk mencatat pendapatan harian.</div>
+        </div>
+    </div>
+    <label for="yearSelect">Pilih Tahun Rekapitulasi</label>
+    <select id="yearSelect" onchange="changeYear(this.value)"></select>
+</div>
  <div id="categoryMenu" class="grid"></div>
- <div class="card"><h2>Rekapitulasi</h2><div class="grid"><div class="stat"><small>Total pendapatan tahun 2026</small><div class="total" id="homeTotal">Rp0</div></div><div class="stat"><small>Jumlah catatan tersimpan</small><div class="total" id="homeCount">0</div></div></div><div class="actions"><button class="primary" onclick="showReport()">📊 Laporan Tahunan</button><button class="secondary" onclick="showData()">🗂 Riwayat Data</button></div></div>
+ <div class="card"><h2>Rekapitulasi</h2><div class="grid"><div class="stat"><small>Total pendapatan tahun <span id="homeYear">2026</span></small><div class="total" id="homeTotal">Rp0</div></div><div class="stat"><small>Jumlah catatan tersimpan</small><div class="total" id="homeCount">0</div></div></div><div class="actions"><button class="primary" onclick="showReport()">📊 Laporan Tahunan</button><button class="secondary" onclick="showData()">🗂 Riwayat Data</button></div></div>
 </section>
 <section id="entry" class="hidden">
  <button class="back" onclick="goHome()">← Kembali ke menu utama</button>
- <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill">2026</span></div><form id="entryForm">
+ <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill" id="entryYear">2026</span></div><form id="entryForm">
  <input type="hidden" id="editId">
- <label for="entryDate">Tanggal pendapatan</label><input id="entryDate" type="date" min="2026-01-01" max="2026-12-31" required>
+ <label for="entryDate">Tanggal pendapatan</label><input id="entryDate" type="date" required>
  <label for="entryAmount">Nominal pendapatan (Rupiah)</label><input id="entryAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="Contoh: 500000" required>
  <div class="muted">Satu catatan untuk setiap jenis retribusi pada satu tanggal. Jika tanggal yang sama sudah ada, data akan diperbarui.</div>
  <div class="actions"><button class="primary" type="submit">💾 Simpan Pendapatan</button><button class="secondary" type="button" onclick="resetForm()">Bersihkan</button></div>
  </form></div>
- <div class="card"><h2>Riwayat jenis retribusi ini</h2><div id="categoryHistory" class="muted">Belum ada data.</div></div>
+ <div class="card">
+    <h2>Riwayat jenis retribusi ini</h2>
+    <div id="categoryHistory" class="muted">Belum ada data.</div>
+</div>
+
+<div class="card">
+    <h2>Rekapitulasi Bulanan Tahun <span id="monthlyYear"></span></h2>
+    <div id="categoryMonthly"></div>
+</div>
 </section>
 <section id="report" class="hidden">
  <button class="back noprint" onclick="goHome()">← Kembali ke menu utama</button>
- <div class="card"><div class="topline"><h2>Laporan Tahunan 2026</h2><span class="pill">JANUARI–DESEMBER</span></div><div class="muted">Rekap pendapatan seluruh jenis retribusi. Gunakan tombol Cetak / Simpan PDF untuk membuat dokumen.</div><div class="total" id="reportTotal">Rp0</div><div class="tablewrap" id="annualTable"></div><div class="actions noprint"><button class="primary" onclick="printReport()">🖨 Cetak / Simpan PDF</button><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button></div><div class="notice noprint">Pada pilihan printer di HP/komputer, pilih “Simpan sebagai PDF” untuk menyimpan laporan dalam format PDF.</div></div>
+ <div class="card"><div class="topline"><h2>Laporan Tahunan <span id="reportYear">2026</span></h2><span class="pill">JANUARI–DESEMBER</span></div><div class="muted">Rekap pendapatan seluruh jenis retribusi. Gunakan tombol Cetak / Simpan PDF untuk membuat dokumen.</div><div class="total" id="reportTotal">Rp0</div><div class="tablewrap" id="annualTable"></div><div class="actions noprint"><button class="primary" onclick="printReport()">🖨 Cetak / Simpan PDF</button><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button></div><div class="notice noprint">Pada pilihan printer di HP/komputer, pilih “Simpan sebagai PDF” untuk menyimpan laporan dalam format PDF.</div></div>
  <div class="card"><h2>Rincian transaksi harian</h2><div id="annualDetails" class="report-detail"></div></div>
 </section>
 <section id="data" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>Riwayat seluruh data</h2><div id="allHistory"></div><div class="actions"><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button><button class="secondary" onclick="document.getElementById('importFile').click()">⬆ Pulihkan Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div></div></section>
@@ -41,27 +58,365 @@
 <script>
 const categories=['JASA PARKIR','JASA PELABUHAN SRI SIANTAN','JASA PELABUHAN PADANG MELANG (JEMAJA)','JASA PELABUHAN ANTANG','JASA PELABUHAN KAMPUNG BARU','JASA PELABUHAN RORO MATAK','JASA TAMBAT PELABUHAN RORO MATAK'];
 const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-let activeCategory=0, records=load();
-function load(){try{return JSON.parse(localStorage.getItem('rekapRetribusi2026')||'[]')}catch(e){return []}}
-function persist(){localStorage.setItem('rekapRetribusi2026',JSON.stringify(records));renderHome()}
+
+const STORAGE_KEY = 'rekapRetribusiMultiTahun';
+
+let currentYear = 2026;
+
+function loadYear(year) {
+    try {
+        let all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Migrasi otomatis data lama tahun 2026
+        if (!all['2026']) {
+            let oldData = JSON.parse(
+                localStorage.getItem('rekapRetribusi2026') || '[]'
+            );
+
+            if (Array.isArray(oldData)) {
+                all['2026'] = oldData;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+            }
+        }
+
+        return Array.isArray(all[String(year)])
+            ? all[String(year)]
+            : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+let activeCategory = 0;
+let records = loadYear(currentYear);
+
+function persist() {
+    let all = {};
+
+    try {
+        all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) {
+        all = {};
+    }
+
+    all[String(currentYear)] = records;
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    renderHome();
+}
+
+function changeYear(value) {
+    currentYear = Number(value);
+    records = loadYear(currentYear);
+
+    resetForm();
+    renderHome();
+    renderCategoryHistory();
+    renderCategoryMonthly();
+    renderAllHistory();
+}
+
+function initYearSelect() {
+    const select = document.getElementById('yearSelect');
+    if (!select) return;
+
+    const lastYear = Math.max(
+        new Date().getFullYear() + 5,
+        currentYear
+    );
+
+    select.innerHTML = '';
+
+    for (let year = 2024; year <= lastYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        select.appendChild(option);
+    }
+
+    select.value = String(currentYear);
+}
+
 function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function sum(list){return list.reduce((a,r)=>a+Number(r.amount||0),0)}
 function show(id){['home','entry','report','data'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));window.scrollTo(0,0)}
 function goHome(){show('home');renderHome()}
-function renderHome(){document.getElementById('categoryMenu').innerHTML=categories.map((c,i)=>`<button class="menu" onclick="openCategory(${i})"><span class="num">${i+1}</span><span>${c}</span><span style="margin-left:auto;color:#789">›</span></button>`).join('');document.getElementById('homeTotal').textContent=rupiah(sum(records));document.getElementById('homeCount').textContent=records.length}
-function openCategory(i){activeCategory=i;document.getElementById('entryTitle').textContent=categories[i];resetForm();renderCategoryHistory();show('entry')}
-function resetForm(){document.getElementById('entryForm').reset();document.getElementById('editId').value='';document.getElementById('entryDate').value=new Date().getFullYear()===2026?new Date().toISOString().slice(0,10):'2026-01-01';document.getElementById('entryAmount').value=''}
-document.getElementById('entryForm').addEventListener('submit',e=>{e.preventDefault();const date=document.getElementById('entryDate').value,amount=Number(document.getElementById('entryAmount').value),editId=document.getElementById('editId').value;if(!date||!date.startsWith('2026-')||!Number.isFinite(amount)||amount<0){alert('Periksa tanggal dan nominal. Tahun harus 2026.');return}let existing=records.find(r=>r.category===activeCategory&&r.date===date);if(editId){let r=records.find(x=>x.id===editId);if(r){r.date=date;r.amount=amount}}else if(existing){if(!confirm('Data untuk jenis retribusi dan tanggal ini sudah ada. Perbarui nominal yang lama?'))return;existing.amount=amount}else{records.push({id:String(Date.now())+Math.random().toString(16).slice(2),category:activeCategory,date,amount})}persist();resetForm();renderCategoryHistory();alert('Pendapatan berhasil disimpan.');});
-function editRecord(id){let r=records.find(x=>x.id===id);if(!r)return;activeCategory=r.category;document.getElementById('entryTitle').textContent=categories[r.category];document.getElementById('editId').value=r.id;document.getElementById('entryDate').value=r.date;document.getElementById('entryAmount').value=r.amount;renderCategoryHistory();show('entry')}
-function deleteRecord(id){if(!confirm('Hapus catatan pendapatan ini?'))return;records=records.filter(r=>r.id!==id);persist();renderCategoryHistory();renderAllHistory()}
-function renderCategoryHistory(){let list=records.filter(r=>r.category===activeCategory).sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('categoryHistory').innerHTML=list.length?list.map(r=>`<div class="record"><div><strong>${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})}</strong><span class="muted">${categories[r.category]}</span></div><div style="text-align:right"><div class="amount">${rupiah(r.amount)}</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord('${r.id}')">Edit</button><button class="smallbtn" onclick="deleteRecord('${r.id}')">Hapus</button></div></div></div>`).join(''):'Belum ada data pendapatan untuk jenis retribusi ini.'}
+
+function renderHome() {
+    document.getElementById('categoryMenu').innerHTML =
+        categories.map((c, i) =>
+            `<button class="menu" onclick="openCategory(${i})">
+                <span class="num">${i + 1}</span>
+                <span>${c}</span>
+                <span style="margin-left:auto;color:#789">›</span>
+            </button>`
+        ).join('');
+
+    document.getElementById('homeTotal').textContent = rupiah(sum(records));
+    document.getElementById('homeCount').textContent = records.length;
+    document.getElementById('homeYear').textContent = currentYear;
+    document.getElementById('entryYear').textContent = currentYear;
+
+    const select = document.getElementById('yearSelect');
+    if (select) select.value = String(currentYear);
+}
+
+function openCategory(i) {
+    activeCategory = i;
+    document.getElementById('entryTitle').textContent = categories[i];
+
+    resetForm();
+    renderCategoryHistory();
+    renderCategoryMonthly();
+
+    show('entry');
+}
+
+function resetForm() {
+    document.getElementById('entryForm').reset();
+    document.getElementById('editId').value = '';
+
+    const dateInput = document.getElementById('entryDate');
+    dateInput.min = currentYear + '-01-01';
+    dateInput.max = currentYear + '-12-31';
+    dateInput.value = currentYear + '-01-01';
+
+    document.getElementById('entryAmount').value = '';
+}
+
+document.getElementById('entryForm').addEventListener('submit', e => {
+    e.preventDefault();
+
+    const date = document.getElementById('entryDate').value;
+    const amount = Number(document.getElementById('entryAmount').value);
+    const editId = document.getElementById('editId').value;
+
+    if (!date || !date.startsWith(currentYear + '-') || !Number.isFinite(amount) || amount < 0) {
+        alert('Periksa tanggal dan nominal. Tahun harus ' + currentYear + '.');
+        return;
+    }
+
+    let existing = records.find(r => r.category === activeCategory && r.date === date);
+
+    if (editId) {
+        let r = records.find(x => x.id === editId);
+        if (r) {
+            r.date = date;
+            r.amount = amount;
+        }
+    } else if (existing) {
+        if (!confirm('Data untuk jenis retribusi dan tanggal ini sudah ada. Perbarui nominal yang lama?')) return;
+        existing.amount = amount;
+    } else {
+        records.push({
+            id: String(Date.now()) + Math.random().toString(16).slice(2),
+            category: activeCategory,
+            date,
+            amount
+        });
+    }
+
+    persist();
+    resetForm();
+    renderCategoryHistory();
+    renderCategoryMonthly();
+
+    alert('Pendapatan berhasil disimpan.');
+});
+function editRecord(id){let r=records.find(x=>x.id===id);if(!r)return;activeCategory=r.category;document.getElementById('entryTitle').textContent=categories[r.category];document.getElementById('editId').value=r.id;document.getElementById('entryDate').min = currentYear + '-01-01';
+document.getElementById('entryDate').max = currentYear + '-12-31';
+document.getElementById('entryDate').value = r.date;document.getElementById('entryAmount').value=r.amount;renderCategoryHistory();
+renderCategoryMonthly();
+show('entry');
+}
+function deleteRecord(id) {
+    if (!confirm('Hapus catatan pendapatan ini?')) return;
+
+    records = records.filter(r => r.id !== id);
+
+    persist();
+    renderCategoryHistory();
+    renderCategoryMonthly();
+    renderAllHistory();
+}
+function renderCategoryHistory()function renderCategoryMonthly() {
+    const monthlyTotals = months.map((month, index) => {
+        return sum(records.filter(r =>
+            r.category === activeCategory &&
+            Number(r.date.slice(5, 7)) === index + 1
+        ));
+    });
+
+    const yearlyTotal = monthlyTotals.reduce((a, b) => a + b, 0);
+
+    document.getElementById('monthlyYear').textContent = currentYear;
+
+    let html = '<div class="tablewrap"><table>';
+    html += '<thead><tr><th>Bulan</th><th>Total Pendapatan</th></tr></thead><tbody>';
+
+    months.forEach((month, index) => {
+        html += `<tr><td>${month}</td><td>${rupiah(monthlyTotals[index])}</td></tr>`;
+    });
+
+    html += `<tr><th>TOTAL TAHUN ${currentYear}</th><th>${rupiah(yearlyTotal)}</th></tr>`;
+    html += '</tbody></table></div>';
+
+    document.getElementById('categoryMonthly').innerHTML = html;
+}{let list=records.filter(r=>r.category===activeCategory).sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('categoryHistory').innerHTML=list.length?list.map(r=>`<div class="record"><div><strong>${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})}</strong><span class="muted">${categories[r.category]}</span></div><div style="text-align:right"><div class="amount">${rupiah(r.amount)}</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord('${r.id}')">Edit</button><button class="smallbtn" onclick="deleteRecord('${r.id}')">Hapus</button></div></div></div>`).join(''):'Belum ada data pendapatan untuk jenis retribusi ini.'}
 function showReport(){renderReport();show('report')}
-function renderReport(){let rows=categories.map((c,i)=>{let monthly=months.map((m,mi)=>sum(records.filter(r=>r.category===i&&Number(r.date.slice(5,7))===mi+1)));return {c,monthly,total:monthly.reduce((a,b)=>a+b,0)}});let html='<table><thead><tr><th>Jenis Retribusi</th>'+months.map(m=>`<th>${m.slice(0,3)}</th>`).join('')+'<th>Total 2026</th></tr></thead><tbody>';rows.forEach(r=>{html+=`<tr><td>${r.c}</td>${r.monthly.map(v=>`<td>${rupiah(v)}</td>`).join('')}<td><b>${rupiah(r.total)}</b></td></tr>`});let totals=months.map((m,i)=>sum(records.filter(r=>Number(r.date.slice(5,7))===i+1)));html+=`<tr><th>TOTAL SEMUA RETRIBUSI</th>${totals.map(v=>`<th>${rupiah(v)}</th>`).join('')}<th>${rupiah(sum(records))}</th></tr></tbody></table>`;document.getElementById('annualTable').innerHTML='<div class="tablewrap">'+html+'</div>';document.getElementById('reportTotal').textContent=rupiah(sum(records));let detail=records.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.category-b.category);document.getElementById('annualDetails').innerHTML=detail.length?'<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Jenis Retribusi</th><th>Nominal</th></tr></thead><tbody>'+detail.map(r=>`<tr><td>${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID')}</td><td>${categories[r.category]}</td><td>${rupiah(r.amount)}</td></tr>`).join('')+'</tbody></table></div>':'Belum ada transaksi yang tersimpan.'}
+function renderReport() {
+    document.getElementById('reportYear').textContent = currentYear;
+    let rows = categories.map((c, i) => {
+        let monthly = months.map((m, mi) =>
+            sum(records.filter(r =>
+                r.category === i &&
+                Number(r.date.slice(5, 7)) === mi + 1
+            ))
+        );
+
+        return {
+            c,
+            monthly,
+            total: monthly.reduce((a, b) => a + b, 0)
+        };
+    });
+
+    let html = '<table><thead><tr><th>Jenis Retribusi</th>';
+
+    html += months.map(m => `<th>${m.slice(0, 3)}</th>`).join('');
+    html += `<th>Total ${currentYear}</th></tr></thead><tbody>`;
+
+    rows.forEach(r => {
+        html += `<tr><td>${r.c}</td>`;
+        html += r.monthly.map(v => `<td>${rupiah(v)}</td>`).join('');
+        html += `<td><b>${rupiah(r.total)}</b></td></tr>`;
+    });
+
+    let totals = months.map((m, i) =>
+        sum(records.filter(r => Number(r.date.slice(5, 7)) === i + 1))
+    );
+
+    html += `<tr><th>TOTAL SEMUA RETRIBUSI</th>`;
+    html += totals.map(v => `<th>${rupiah(v)}</th>`).join('');
+    html += `<th>${rupiah(sum(records))}</th></tr></tbody></table>`;
+
+    document.getElementById('annualTable').innerHTML =
+        '<div class="tablewrap">' + html + '</div>';
+
+    document.getElementById('reportTotal').textContent = rupiah(sum(records));
+
+    let detail = records.slice().sort((a, b) =>
+        a.date.localeCompare(b.date) || a.category - b.category
+    );
+
+    document.getElementById('annualDetails').innerHTML = detail.length
+        ? '<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Jenis Retribusi</th><th>Nominal</th></tr></thead><tbody>' +
+          detail.map(r =>
+              `<tr><td>${new Date(r.date + 'T00:00:00').toLocaleDateString('id-ID')}</td><td>${categories[r.category]}</td><td>${rupiah(r.amount)}</td></tr>`
+          ).join('') +
+          '</tbody></table></div>'
+        : 'Belum ada transaksi yang tersimpan.';
+}
 function showData(){renderAllHistory();show('data')}
 function renderAllHistory(){let list=records.slice().sort((a,b)=>b.date.localeCompare(a.date)||a.category-b.category);document.getElementById('allHistory').innerHTML=list.length?list.map(r=>`<div class="record"><div><strong>${esc(categories[r.category])}</strong><span class="muted">${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID')}</span></div><div style="text-align:right"><div class="amount">${rupiah(r.amount)}</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord('${r.id}')">Edit</button><button class="smallbtn" onclick="deleteRecord('${r.id}')">Hapus</button></div></div></div>`).join(''):'Belum ada data.'}
 function printReport(){if(window.AndroidPrint&&window.AndroidPrint.print)window.AndroidPrint.print();else window.print()}
-function exportJSON(){let blob=new Blob([JSON.stringify({year:2026,records},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cadangan_retribusi_2026.json';a.click();URL.revokeObjectURL(a.href)}
-function importJSON(e){let f=e.target.files[0];if(!f)return;let reader=new FileReader();reader.onload=()=>{try{let d=JSON.parse(reader.result);if(!Array.isArray(d.records)||d.records.some(r=>!Number.isInteger(r.category)||r.category<0||r.category>6||!/^2026-\d{2}-\d{2}$/.test(r.date)||!Number.isFinite(Number(r.amount))))throw Error();if(!confirm('Pulihkan data dari cadangan? Data saat ini akan diganti.'))return;records=d.records;persist();renderAllHistory();alert('Data berhasil dipulihkan.')}catch(err){alert('File cadangan tidak valid.')}};reader.readAsText(f);e.target.value=''};
+function exportJSON() {
+    let all = {};
+
+    try {
+        all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) {
+        all = {};
+    }
+
+    // Pastikan data tahun yang sedang dibuka ikut tersimpan
+    all[String(currentYear)] = records;
+
+    let blob = new Blob(
+        [JSON.stringify(all, null, 2)],
+        {type: 'application/json'}
+    );
+
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cadangan_seluruh_tahun_retribusi.json';
+    a.click();
+
+    URL.revokeObjectURL(a.href);
+function importJSON(e) {
+    let f = e.target.files[0];
+    if (!f) return;
+
+    let reader = new FileReader();
+
+    reader.onload = () => {
+        try {
+            let d = JSON.parse(reader.result);
+            let imported = {};
+
+            // Mendukung format backup lama
+            if (Number.isInteger(d.year) && Array.isArray(d.records)) {
+                imported[String(d.year)] = d.records;
+            } else {
+                // Mendukung format backup semua tahun
+                imported = d;
+            }
+
+            let years = Object.keys(imported);
+
+            if (years.length === 0) throw Error();
+
+            for (let year of years) {
+                if (
+                    !/^\d{4}$/.test(year) ||
+                    Number(year) < 2024 ||
+                    !Array.isArray(imported[year]) ||
+                    imported[year].some(r =>
+                        !Number.isInteger(r.category) ||
+                        r.category < 0 ||
+                        r.category > 6 ||
+                        typeof r.date !== 'string' ||
+                        !r.date.startsWith(year + '-') ||
+                        !Number.isFinite(Number(r.amount)) ||
+                        Number(r.amount) < 0
+                    )
+                ) {
+                    throw Error();
+                }
+            }
+
+            if (!confirm('Pulihkan backup untuk tahun: ' + years.join(', ') + '? Data tahun tersebut akan diganti.')) return;
+
+            let all = {};
+
+            try {
+                all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch (err) {
+                all = {};
+            }
+
+            Object.assign(all, imported);
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+
+            records = loadYear(currentYear);
+
+            renderHome();
+            renderCategoryHistory();
+            renderCategoryMonthly();
+            renderAllHistory();
+
+            alert('Backup berhasil dipulihkan untuk tahun: ' + years.join(', '));
+
+        } catch (err) {
+            alert('File cadangan tidak valid.');
+        }
+    };
+
+    reader.readAsText(f);
+    e.target.value = '';
+}
+initYearSelect();
 renderHome();
 </script></body></html>
