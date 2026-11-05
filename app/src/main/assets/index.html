@@ -12,7 +12,7 @@
 <body>
 <header class="brand-header"><div class="brand-inner"><div class="brand-mark"><svg viewBox="0 0 120 100"><path d="M13 67h94L92 84H34z" fill="#f6b928"/><path d="M19 59h82L84 76H35z" fill="#fff"/><path d="M45 27h34l10 29H34z" fill="#e8f7ff"/><path d="M52 16h20v12H52z" fill="#fff"/><path d="M62 7v10" stroke="#fff" stroke-width="3"/><path d="M8 88c18-8 29 8 47 0s29 8 47 0" fill="none" stroke="#43c8ed" stroke-width="5" stroke-linecap="round"/></svg></div><div class="brand-copy"><small>DINAS PERHUBUNGAN DAN LINGKUNGAN HIDUP</small><h1>UPT PENGELOLAAN<br><b>TRANSPORTASI</b></h1><p>REKAPAN RETRIBUSI JASA KEPELABUHANAN · 2026</p></div></div></header>
 <div class="wrap">
-<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
+<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><p id="autoBackupStatus" class="muted" style="text-align:center;margin:8px 0 14px">Backup otomatis tersimpan di penyimpanan aplikasi setiap ada perubahan data. Buat juga Backup Data manual ke tempat lain secara berkala.</p><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
 <section id="entry" class="hidden">
  <button class="back" onclick="goHome()">← Kembali ke menu utama</button>
  <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill" id="entryYear">2026</span></div><form id="entryForm">
@@ -84,7 +84,20 @@ function persist() {
 
     all[String(currentYear)] = records;
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    const serialized = JSON.stringify(all);
+    localStorage.setItem(STORAGE_KEY, serialized);
+    if (window.AndroidBackup && typeof window.AndroidBackup.saveBackup === 'function') {
+        try {
+            const ok = window.AndroidBackup.saveBackup(serialized);
+            const status = document.getElementById('autoBackupStatus');
+            if (status) status.textContent = ok
+                ? 'Backup otomatis terakhir: ' + new Date().toLocaleString('id-ID')
+                : 'Backup otomatis gagal. Segera gunakan Backup Data manual.';
+        } catch (err) {
+            const status = document.getElementById('autoBackupStatus');
+            if (status) status.textContent = 'Backup otomatis gagal. Segera gunakan Backup Data manual.';
+        }
+    }
     renderHome();
 }
 
@@ -331,4 +344,15 @@ function importJSON(e) {
 }
 initYearSelect();
 renderHome();
+try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && window.AndroidBackup && typeof window.AndroidBackup.saveBackup === 'function') {
+        const ok = window.AndroidBackup.saveBackup(saved);
+        const status = document.getElementById('autoBackupStatus');
+        if (status && ok) status.textContent = 'Backup otomatis aktif · snapshot terakhir: ' + new Date().toLocaleString('id-ID');
+    }
+} catch (err) {
+    const status = document.getElementById('autoBackupStatus');
+    if (status) status.textContent = 'Backup otomatis belum dapat dibuat. Gunakan Backup Data manual.';
+}
 </script></body></html>
