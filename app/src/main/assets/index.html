@@ -305,7 +305,7 @@ function processImportText(raw) {
 
         for (let year of years) {
             if (
-                !/^\\d{4}$/.test(year) ||
+                !/^\d{4}$/.test(year) ||
                 Number(year) < 2024 ||
                 !Array.isArray(imported[year]) ||
                 imported[year].some(r =>
