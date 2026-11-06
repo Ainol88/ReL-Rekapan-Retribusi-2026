@@ -2,6 +2,8 @@ package id.go.rekapanretribusi
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import org.json.JSONObject
 import java.io.File
 import java.security.MessageDigest
@@ -19,6 +21,7 @@ import android.webkit.WebSettings
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
+    private var pendingBackupJson: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,64 +32,86 @@ class MainActivity : Activity() {
         webView.settings.domStorageEnabled = true
         webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
         webView.addJavascriptInterface(PrintBridge(this), "AndroidPrint")
-        webView.addJavascriptInterface(BackupBridge(this), "AndroidBackup")
+        webView.addJavascriptInterface(FileBridge(this), "AndroidFiles")
         webView.loadUrl("file:///android_asset/index.html")
         setContentView(webView)
     }
 
 
-    /**
-     * Cadangan otomatis lokal bergilir di direktori privat aplikasi.
-     * Backup manual tetap diperlukan untuk perlindungan dari uninstall/kerusakan HP.
-     */
-    private class BackupBridge(private val context: Context) {
+    // Backup dan restore manual melalui pemilih dokumen Android.
+    private class FileBridge(private val activity: MainActivity) {
         @JavascriptInterface
-        @Synchronized
-        fun saveBackup(json: String): Boolean {
-            return try {
-                if (json.isBlank() || json.length > 20_000_000) return false
-                val data = JSONObject(json)
-                val keys = data.keys()
-                var hasYear = false
-                while (keys.hasNext()) {
-                    val year = keys.next()
-                    if (!year.matches(Regex("\\d{4}")) || data.optJSONArray(year) == null) return false
-                    hasYear = true
+        fun saveJSON(json: String) {
+            if (json.isBlank() || json.length > 20_000_000) {
+                activity.runOnUiThread {
+                    activity.webView.evaluateJavascript("window.onJSONSaved && window.onJSONSaved(false)", null)
                 }
-                if (!hasYear) return false
-
-                val digest = MessageDigest.getInstance("SHA-256")
-                    .digest(json.toByteArray(Charsets.UTF_8))
-                    .joinToString("") { "%02x".format(it) }
-                val stamp = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
-                val dir = File(context.filesDir, "automatic_backups")
-                if (!dir.exists() && !dir.mkdirs()) return false
-
-                val envelope = JSONObject().apply {
-                    put("format", "ReL-Retribusi-AutoBackup")
-                    put("version", 1)
-                    put("createdAt", System.currentTimeMillis())
-                    put("sha256", digest)
-                    put("data", data)
-                }.toString()
-
-                val target = File(dir, "backup_$stamp.json")
-                val temp = File(dir, "backup_$stamp.tmp")
-                temp.writeText(envelope, Charsets.UTF_8)
-                if (!temp.renameTo(target)) {
-                    temp.delete()
-                    return false
+                return
+            }
+            activity.runOnUiThread {
+                activity.pendingBackupJson = json
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_TITLE, "cadangan_seluruh_tahun_retribusi.json")
                 }
-
-                dir.listFiles { file -> file.isFile && file.name.endsWith(".json") }
-                    ?.sortedByDescending { it.lastModified() }
-                    ?.drop(10)
-                    ?.forEach { it.delete() }
-                true
-            } catch (_: Exception) {
-                false
+                activity.startActivityForResult(intent, REQUEST_SAVE_JSON)
             }
         }
+
+        @JavascriptInterface
+        fun openJSON() {
+            activity.runOnUiThread {
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "application/json"
+                }
+                activity.startActivityForResult(intent, REQUEST_OPEN_JSON)
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Android")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != RESULT_OK || data?.data == null) {
+            if (requestCode == REQUEST_SAVE_JSON) {
+                pendingBackupJson = null
+                webView.evaluateJavascript("window.onJSONSaved && window.onJSONSaved(false)", null)
+            }
+            return
+        }
+
+        val uri: Uri = data.data!!
+        when (requestCode) {
+            REQUEST_SAVE_JSON -> {
+                val json = pendingBackupJson
+                pendingBackupJson = null
+                val success = try {
+                    if (json == null) false else {
+                        contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray(Charsets.UTF_8)) } != null
+                    }
+                } catch (_: Exception) { false }
+                webView.evaluateJavascript("window.onJSONSaved && window.onJSONSaved($success)", null)
+            }
+            REQUEST_OPEN_JSON -> {
+                try {
+                    val json = contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                    if (json.isNullOrBlank() || json.length > 20_000_000) {
+                        webView.evaluateJavascript("window.onJSONRestoreResult && window.onJSONRestoreResult('')", null)
+                    } else {
+                        webView.evaluateJavascript("window.onJSONRestoreResult && window.onJSONRestoreResult(${JSONObject.quote(json)})", null)
+                    }
+                } catch (_: Exception) {
+                    webView.evaluateJavascript("window.onJSONRestoreResult && window.onJSONRestoreResult('')", null)
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_SAVE_JSON = 7101
+        private const val REQUEST_OPEN_JSON = 7102
     }
 
     private class PrintBridge(private val activity: Activity) {
