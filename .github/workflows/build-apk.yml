@@ -3,7 +3,7 @@ name: Build APK Android
 on:
   workflow_dispatch:
   push:
-    branches: [ main, dashboard-maritim-2026, perlindungan-data-auto-backup-v1 ]
+    branches: [ main, dashboard-maritim-2026, perlindungan-data-auto-backup-v1, backup-manual-json-v2 ]
 
 permissions:
   contents: read
