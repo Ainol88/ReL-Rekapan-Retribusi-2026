@@ -12,7 +12,7 @@
 <body>
 <header class="brand-header"><div class="brand-inner"><div class="brand-mark"><svg viewBox="0 0 120 100"><path d="M13 67h94L92 84H34z" fill="#f6b928"/><path d="M19 59h82L84 76H35z" fill="#fff"/><path d="M45 27h34l10 29H34z" fill="#e8f7ff"/><path d="M52 16h20v12H52z" fill="#fff"/><path d="M62 7v10" stroke="#fff" stroke-width="3"/><path d="M8 88c18-8 29 8 47 0s29 8 47 0" fill="none" stroke="#43c8ed" stroke-width="5" stroke-linecap="round"/></svg></div><div class="brand-copy"><small>DINAS PERHUBUNGAN DAN LINGKUNGAN HIDUP</small><h1>UPT PENGELOLAAN<br><b>TRANSPORTASI</b></h1><p>REKAPAN RETRIBUSI JASA KEPELABUHANAN · 2026</p></div></div></header>
 <div class="wrap">
-<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
+<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="restoreJSON()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
 <section id="entry" class="hidden">
  <button class="back" onclick="goHome()">← Kembali ke menu utama</button>
  <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill" id="entryYear">2026</span></div><form id="entryForm">
@@ -261,78 +261,86 @@ function exportJSON() {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+function restoreJSON() {
+    if (window.AndroidFiles && typeof window.AndroidFiles.openJSON === 'function') {
+        window.AndroidFiles.openJSON();
+    } else {
+        document.getElementById('importFile').click();
+    }
+}
 function importJSON(e) {
     let f = e.target.files[0];
     if (!f) return;
-
     let reader = new FileReader();
-
-    reader.onload = () => {
-        try {
-            let d = JSON.parse(reader.result);
-            let imported = {};
-
-            // Mendukung format backup lama
-            if (Number.isInteger(d.year) && Array.isArray(d.records)) {
-                imported[String(d.year)] = d.records;
-            } else {
-                // Mendukung format backup semua tahun
-                imported = d;
-            }
-
-            let years = Object.keys(imported);
-
-            if (years.length === 0) throw Error();
-
-            for (let year of years) {
-                if (
-                    !/^\d{4}$/.test(year) ||
-                    Number(year) < 2024 ||
-                    !Array.isArray(imported[year]) ||
-                    imported[year].some(r =>
-                        !Number.isInteger(r.category) ||
-                        r.category < 0 ||
-                        r.category > 6 ||
-                        typeof r.date !== 'string' ||
-                        !r.date.startsWith(year + '-') ||
-                        !Number.isFinite(Number(r.amount)) ||
-                        Number(r.amount) < 0
-                    )
-                ) {
-                    throw Error();
-                }
-            }
-
-            if (!confirm('Pulihkan backup untuk tahun: ' + years.join(', ') + '? Data tahun tersebut akan diganti.')) return;
-
-            let all = {};
-
-            try {
-                all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-            } catch (err) {
-                all = {};
-            }
-
-            Object.assign(all, imported);
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-
-            records = loadYear(currentYear);
-
-            renderHome();
-            renderCategoryHistory();
-            renderCategoryRecap();
-            renderAllHistory();
-
-            alert('Backup berhasil dipulihkan untuk tahun: ' + years.join(', '));
-
-        } catch (err) {
-            alert('File cadangan tidak valid.');
-        }
-    };
-
+    reader.onload = () => processImportText(String(reader.result || ''));
+    reader.onerror = () => alert('File cadangan tidak dapat dibaca.');
     reader.readAsText(f);
     e.target.value = '';
+}
+window.onJSONRestoreResult = function(json) {
+    if (!json) {
+        alert('File cadangan tidak dapat dibaca atau kosong.');
+        return;
+    }
+    processImportText(json);
+};
+window.onJSONSaved = function(ok) {
+    alert(ok
+        ? 'Backup berhasil disimpan sebagai file JSON. Simpan file ini di tempat aman.'
+        : 'Backup tidak berhasil disimpan. Silakan coba kembali.');
+};
+function processImportText(raw) {
+    try {
+        let d = JSON.parse(raw);
+        let imported = {};
+
+        if (Number.isInteger(d.year) && Array.isArray(d.records)) {
+            imported[String(d.year)] = d.records;
+        } else {
+            imported = d;
+        }
+
+        let years = Object.keys(imported);
+        if (years.length === 0) throw Error();
+
+        for (let year of years) {
+            if (
+                !/^\\d{4}$/.test(year) ||
+                Number(year) < 2024 ||
+                !Array.isArray(imported[year]) ||
+                imported[year].some(r =>
+                    !Number.isInteger(r.category) ||
+                    r.category < 0 ||
+                    r.category > 6 ||
+                    typeof r.date !== 'string' ||
+                    !r.date.startsWith(year + '-') ||
+                    !Number.isFinite(Number(r.amount)) ||
+                    Number(r.amount) < 0
+                )
+            ) throw Error();
+        }
+
+        if (!confirm('Pulihkan backup untuk tahun: ' + years.join(', ') + '? Data tahun tersebut akan diganti.')) return;
+
+        let all = {};
+        try {
+            all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        } catch (err) {
+            all = {};
+        }
+
+        Object.assign(all, imported);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+        records = loadYear(currentYear);
+
+        renderHome();
+        renderCategoryHistory();
+        renderCategoryRecap();
+        renderAllHistory();
+        alert('Backup berhasil dipulihkan untuk tahun: ' + years.join(', '));
+    } catch (err) {
+        alert('File cadangan tidak valid.');
+    }
 }
 initYearSelect();
 renderHome();
