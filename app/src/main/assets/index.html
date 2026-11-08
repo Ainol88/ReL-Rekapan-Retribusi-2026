@@ -36,7 +36,7 @@
  <div class="card"><div class="topline"><h2>Laporan Tahunan <span id="reportYear">2026</span></h2><span class="pill">JANUARI–DESEMBER</span></div><div class="muted">Rekap pendapatan seluruh jenis retribusi. Gunakan tombol Cetak / Simpan PDF untuk membuat dokumen.</div><div class="total" id="reportTotal">Rp0</div><div class="tablewrap" id="annualTable"></div><div class="actions noprint"><button class="primary" onclick="printReport()">🖨 Cetak / Simpan PDF</button><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button></div><div class="notice noprint">Pada pilihan printer di HP/komputer, pilih “Simpan sebagai PDF” untuk menyimpan laporan dalam format PDF.</div></div>
  <div class="card"><h2>Rincian transaksi harian</h2><div id="annualDetails" class="report-detail"></div></div>
 </section>
-<section id="data" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>Riwayat seluruh data</h2><div id="allHistory"></div><div class="actions"><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button><button class="secondary" onclick="document.getElementById('importFile').click()">⬆ Pulihkan Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div></div></section>
+<section id="data" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>Riwayat seluruh data</h2><div id="allHistory"></div><div class="actions"><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button><button class="secondary" onclick="document.getElementById('importFile').click()">⬆ Pulihkan Data</button><input type="file" accept="application/json,.json" class="hidden" onchange="importJSON(event)"></div></div></section>
 </div>
 <script>
 const categories=['JASA PARKIR','JASA PELABUHAN SRI SIANTAN','JASA PELABUHAN PADANG MELANG (JEMAJA)','JASA PELABUHAN ANTANG','JASA PELABUHAN KAMPUNG BARU','JASA PELABUHAN RORO MATAK','JASA TAMBAT PELABUHAN RORO MATAK'];
@@ -238,27 +238,32 @@ function renderAllHistory(){let list=records.slice().sort((a,b)=>b.date.localeCo
 function printReport(){if(window.AndroidPrint&&window.AndroidPrint.print)window.AndroidPrint.print();else window.print()}
 function exportJSON() {
     let all = {};
-
     try {
         all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     } catch (e) {
         all = {};
     }
-
-    // Pastikan data tahun yang sedang dibuka ikut tersimpan
+    // Pastikan data tahun yang sedang dibuka ikut masuk ke dalam backup.
     all[String(currentYear)] = records;
+    const backupText = JSON.stringify(all, null, 2);
 
-    let blob = new Blob(
-        [JSON.stringify(all, null, 2)],
-        {type: 'application/json'}
-    );
+    // Android WebView menggunakan pemilih lokasi simpan native agar file
+    // benar-benar tersimpan ke perangkat, bukan bergantung pada blob URL.
+    if (window.AndroidBackup && typeof window.AndroidBackup.saveBackup === 'function') {
+        window.AndroidBackup.saveBackup(backupText);
+        return;
+    }
 
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    // Fallback untuk browser biasa.
+    const blob = new Blob([backupText], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
     a.download = 'cadangan_seluruh_tahun_retribusi.json';
+    document.body.appendChild(a);
     a.click();
-
-    URL.revokeObjectURL(a.href);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function importJSON(e) {
     let f = e.target.files[0];
