@@ -12,14 +12,15 @@
 <body>
 <header class="brand-header"><div class="brand-inner"><div class="brand-mark"><svg viewBox="0 0 120 100"><path d="M13 67h94L92 84H34z" fill="#f6b928"/><path d="M19 59h82L84 76H35z" fill="#fff"/><path d="M45 27h34l10 29H34z" fill="#e8f7ff"/><path d="M52 16h20v12H52z" fill="#fff"/><path d="M62 7v10" stroke="#fff" stroke-width="3"/><path d="M8 88c18-8 29 8 47 0s29 8 47 0" fill="none" stroke="#43c8ed" stroke-width="5" stroke-linecap="round"/></svg></div><div class="brand-copy"><small>DINAS PERHUBUNGAN DAN LINGKUNGAN HIDUP</small><h1>UPT PENGELOLAAN<br><b>TRANSPORTASI</b></h1><p>REKAPAN RETRIBUSI JASA KEPELABUHANAN · 2026</p></div></div></header>
 <div class="wrap">
-<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
+<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="group-totals"><div class="stat"><small>RETRIBUSI JASA PARKIR</small><div class="group-total" id="parkingTotal">Rp0</div></div><div class="stat"><small>RETRIBUSI JASA KEPELABUHANAN</small><div class="group-total" id="portTotal">Rp0</div></div></div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
+<section id="roroMenu" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>JASA PELABUHAN RORO MATAK</h2><p class="muted">Pilih jenis pas sesuai tarif tetap yang berlaku.</p><div id="roroSubmenu" class="grid"></div><div class="notice">Catatan Roro Matak lama tetap tersimpan dan tetap dihitung dalam total jasa kepelabuhanan. Transaksi baru dicatat melalui salah satu dari tujuh submenu berikut.</div></div></section>
 <section id="entry" class="hidden">
  <button class="back" onclick="goHome()">← Kembali ke menu utama</button>
  <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill" id="entryYear">2026</span></div><form id="entryForm">
  <input type="hidden" id="editId">
  <label for="entryDate">Tanggal pendapatan</label><input id="entryDate" type="date" required>
  <div class="ticket-grid"><div><label for="ticketStart">Nomor Seri Tiket Awal</label><input id="ticketStart" type="number" min="1" step="1" inputmode="numeric" placeholder="Contoh: 001" required></div><div><label for="ticketEnd">Nomor Seri Tiket Akhir</label><input id="ticketEnd" type="number" min="1" step="1" inputmode="numeric" placeholder="Contoh: 050" required></div></div>
- <label for="ticketPrice">Harga per Tiket</label><select id="ticketPrice" required><option value="1000">Rp1.000</option><option value="2000">Rp2.000</option><option value="3000">Rp3.000</option><option value="4000">Rp4.000</option><option value="5000">Rp5.000</option><option value="6000">Rp6.000</option><option value="7000">Rp7.000</option><option value="8000">Rp8.000</option><option value="9000">Rp9.000</option><option value="10000">Rp10.000</option></select>
+ <div id="manualTicketPrice"><label for="ticketPrice">Harga per Tiket</label><select id="ticketPrice" required><option value="1000">Rp1.000</option><option value="2000">Rp2.000</option><option value="3000">Rp3.000</option><option value="4000">Rp4.000</option><option value="5000">Rp5.000</option><option value="6000">Rp6.000</option><option value="7000">Rp7.000</option><option value="8000">Rp8.000</option><option value="9000">Rp9.000</option><option value="10000">Rp10.000</option></select></div><div id="fixedTicketPrice" class="notice hidden"></div>
  <div class="ticket-grid"><div><label for="ticketCount">Jumlah Tiket (otomatis)</label><input id="ticketCount" type="number" readonly placeholder="Dihitung otomatis"></div><div><label for="entryAmount">Nominal Retribusi (otomatis)</label><input id="entryAmount" type="text" readonly placeholder="Rp0"></div></div>
  <div class="muted">Jumlah tiket = seri akhir − seri awal + 1. Nominal retribusi = jumlah tiket × harga per tiket. Harga dapat dipilih dari Rp1.000 hingga Rp10.000.</div>
  <div class="actions"><button class="primary" type="submit">💾 Simpan Pendapatan</button><button class="secondary" type="button" onclick="resetForm()">Bersihkan</button></div>
@@ -40,6 +41,7 @@
 </div>
 <script>
 const categories=['JASA PARKIR','JASA PELABUHAN SRI SIANTAN','JASA PELABUHAN PADANG MELANG (JEMAJA)','JASA PELABUHAN ANTANG','JASA PELABUHAN KAMPUNG BARU','JASA PELABUHAN RORO MATAK','JASA TAMBAT PELABUHAN RORO MATAK'];
+const roroTypes=[{name:'PAS PENUMPANG',price:3000},{name:'PAS ANAK-ANAK',price:2000},{name:'PAS ORANG',price:1000},{name:'PAS KENDARAAN RODA 2',price:2000},{name:'PAS KENDARAAN RODA 3',price:3000},{name:'PAS KENDARAAN RODA 4',price:5000},{name:'PAS KENDARAAN RODA 6',price:10000}];
 const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
 const STORAGE_KEY = 'rekapRetribusiMultiTahun';
@@ -123,14 +125,18 @@ function initYearSelect() {
 function rupiah(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function sum(list){return list.reduce((a,r)=>a+Number(r.amount||0),0)}
-function show(id){['home','entry','report','data'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));window.scrollTo(0,0)}
-function goHome(){show('home');renderHome()}
+function show(id){['home','roroMenu','entry','report','data'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));window.scrollTo(0,0)}
+function goHome(){activeRoroType=null;show('home');renderHome()}
 
 function renderHome() {
     document.getElementById('categoryMenu').innerHTML =
         categories.map((c, i) => {const icons=['🚗','🚢','🛳️','⚓','🏝️','🚚','📋'];return `<button class="menu" onclick="openCategory(${i})"><span class="num">${icons[i]}</span><span class="menu-label">${c}</span><span class="menu-arrow">›</span></button>`;}).join('');
 
-    document.getElementById('homeTotal').textContent = rupiah(sum(records));
+    const parkingTotal=sum(records.filter(r=>r.category===0));
+    const portTotal=sum(records.filter(r=>r.category>=1&&r.category<=6));
+    document.getElementById('homeTotal').textContent = rupiah(parkingTotal+portTotal);
+    document.getElementById('parkingTotal').textContent = rupiah(parkingTotal);
+    document.getElementById('portTotal').textContent = rupiah(portTotal);
     document.getElementById('homeCount').textContent = records.length;
     document.getElementById('homeYear').textContent = currentYear;
     document.getElementById('entryYear').textContent = currentYear;
@@ -139,22 +145,28 @@ function renderHome() {
     if (select) select.value = String(currentYear);
 }
 
+function renderRoroMenu(){document.getElementById('roroSubmenu').innerHTML=roroTypes.map((t,i)=>`<button class="menu" onclick="openRoroSubcategory(${i})"><span class="num">${i+1}</span><span class="menu-label">${t.name}<br><small>${rupiah(t.price)} / tiket</small></span><span class="menu-arrow">›</span></button>`).join('');}
 function openCategory(i) {
     activeCategory = i;
+    activeRoroType = null;
+    if(i===5){renderRoroMenu();show('roroMenu');return;}
     document.getElementById('entryTitle').textContent = categories[i];
-
+    updateTicketPriceMode();
     resetForm();
     renderCategoryHistory();
     renderCategoryRecap();
-
     show('entry');
 }
+function openRoroSubcategory(i){activeCategory=5;activeRoroType=i;document.getElementById('entryTitle').textContent=roroTypes[i].name;updateTicketPriceMode();resetForm();renderCategoryHistory();renderCategoryRecap();show('entry');}
+let activeRoroType=null;
+function updateTicketPriceMode(){const fixed=activeCategory===5&&Number.isInteger(activeRoroType);document.getElementById('manualTicketPrice').classList.toggle('hidden',fixed);document.getElementById('fixedTicketPrice').classList.toggle('hidden',!fixed);if(fixed)document.getElementById('fixedTicketPrice').textContent='Tarif tetap '+roroTypes[activeRoroType].name+': '+rupiah(roroTypes[activeRoroType].price)+' per tiket';}
 
 function resetForm(){document.getElementById('entryForm').reset();document.getElementById('editId').value='';const d=document.getElementById('entryDate');d.min=currentYear+'-01-01';d.max=currentYear+'-12-31';d.value=currentYear+'-01-01';document.getElementById('ticketStart').value='';document.getElementById('ticketEnd').value='';document.getElementById('ticketPrice').value='3000';updateTicketCalculation();}
-function updateTicketCalculation(){const a=Number(document.getElementById('ticketStart').value),b=Number(document.getElementById('ticketEnd').value),p=Number(document.getElementById('ticketPrice').value);const ok=Number.isInteger(a)&&Number.isInteger(b)&&a>0&&b>=a&&p>=1000&&p<=10000;const q=ok?b-a+1:0;document.getElementById('ticketCount').value=q||'';document.getElementById('entryAmount').value=rupiah(q*p);return {a,b,p,q,amount:q*p,ok};}
+function updateTicketCalculation(){const a=Number(document.getElementById('ticketStart').value),b=Number(document.getElementById('ticketEnd').value),p=activeCategory===5&&Number.isInteger(activeRoroType)?roroTypes[activeRoroType].price:Number(document.getElementById('ticketPrice').value);const ok=Number.isInteger(a)&&Number.isInteger(b)&&a>0&&b>=a&&p>=1000&&p<=10000;const q=ok?b-a+1:0;document.getElementById('ticketCount').value=q||'';document.getElementById('entryAmount').value=rupiah(q*p);return {a,b,p,q,amount:q*p,ok};}
 ['ticketStart','ticketEnd','ticketPrice'].forEach(id=>{document.getElementById(id).addEventListener('input',updateTicketCalculation);document.getElementById(id).addEventListener('change',updateTicketCalculation);});
-document.getElementById('entryForm').addEventListener('submit',e=>{e.preventDefault();const date=document.getElementById('entryDate').value,c=updateTicketCalculation(),editId=document.getElementById('editId').value;if(!date||!date.startsWith(currentYear+'-')||!c.ok){alert('Periksa tanggal dan nomor seri tiket. Nomor akhir harus sama atau lebih besar dari nomor awal.');return;}const rec={id:editId||String(Date.now())+Math.random().toString(16).slice(2),category:activeCategory,date,ticketStart:c.a,ticketEnd:c.b,ticketPrice:c.p,ticketCount:c.q,amount:c.amount};if(editId){const i=records.findIndex(x=>x.id===editId);if(i>=0)records[i]=rec;}else records.push(rec);persist();resetForm();renderCategoryHistory();renderCategoryRecap();renderAllHistory();alert('Data tiket dan nominal retribusi berhasil disimpan.');});
-function editRecord(id){const r=records.find(x=>x.id===id);if(!r)return;activeCategory=r.category;document.getElementById('entryTitle').textContent=categories[r.category];document.getElementById('editId').value=r.id;const d=document.getElementById('entryDate');d.min=currentYear+'-01-01';d.max=currentYear+'-12-31';d.value=r.date;document.getElementById('ticketStart').value=r.ticketStart??'';document.getElementById('ticketEnd').value=r.ticketEnd??'';document.getElementById('ticketPrice').value=String(r.ticketPrice||3000);updateTicketCalculation();renderCategoryHistory();renderCategoryRecap();show('entry');}
+document.getElementById('entryForm').addEventListener('submit',e=>{e.preventDefault();const date=document.getElementById('entryDate').value,c=updateTicketCalculation(),editId=document.getElementById('editId').value;if(!date||!date.startsWith(currentYear+'-')||!c.ok){alert('Periksa tanggal dan nomor seri tiket. Nomor akhir harus sama atau lebih besar dari nomor awal.');return;}const rec={id:editId||String(Date.now())+Math.random().toString(16).slice(2),category:activeCategory,roroType:activeCategory===5?activeRoroType:null,date,ticketStart:c.a,ticketEnd:c.b,ticketPrice:c.p,ticketCount:c.q,amount:c.amount};if(editId){const i=records.findIndex(x=>x.id===editId);if(i>=0)records[i]=rec;}else records.push(rec);persist();resetForm();renderCategoryHistory();renderCategoryRecap();renderAllHistory();alert('Data tiket dan nominal retribusi berhasil disimpan.');});
+function recordCategoryName(r){return r.category===5&&Number.isInteger(r.roroType)&&roroTypes[r.roroType]?roroTypes[r.roroType].name:categories[r.category];}
+function editRecord(id){const r=records.find(x=>x.id===id);if(!r)return;activeCategory=r.category;activeRoroType=r.category===5&&Number.isInteger(r.roroType)?r.roroType:null;document.getElementById('entryTitle').textContent=recordCategoryName(r);updateTicketPriceMode();document.getElementById('editId').value=r.id;const d=document.getElementById('entryDate');d.min=currentYear+'-01-01';d.max=currentYear+'-12-31';d.value=r.date;document.getElementById('ticketStart').value=r.ticketStart??'';document.getElementById('ticketEnd').value=r.ticketEnd??'';document.getElementById('ticketPrice').value=String(r.ticketPrice||3000);updateTicketCalculation();renderCategoryHistory();renderCategoryRecap();show('entry');}
 function deleteRecord(id) {
     if (!confirm('Hapus catatan pendapatan ini?')) return;
 
@@ -169,12 +181,12 @@ let recapMode='daily';
 function setRecapMode(mode){recapMode=mode;['daily','weekly','annual'].forEach(m=>{const e=document.getElementById('tab'+m[0].toUpperCase()+m.slice(1));if(e)e.classList.toggle('active',m===mode);});renderCategoryRecap();}
 function weekStart(date){const d=new Date(date+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
 function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function renderCategoryRecap(){const list=records.filter(r=>r.category===activeCategory);let html='';
+function renderCategoryRecap(){const list=records.filter(r=>r.category===activeCategory&&(activeCategory!==5||r.roroType===activeRoroType));let html='';
 if(recapMode==='daily'){const g={};list.forEach(r=>g[r.date]=(g[r.date]||0)+Number(r.amount||0));const keys=Object.keys(g).sort((a,b)=>b.localeCompare(a));html='<div class="recap-total">Total retribusi kategori ini: '+rupiah(sum(list))+'</div>'+(keys.length?'<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Jumlah Tiket</th><th>Nominal Retribusi</th></tr></thead><tbody>'+keys.map(k=>'<tr><td>'+new Date(k+'T00:00:00').toLocaleDateString('id-ID')+'</td><td>'+list.filter(r=>r.date===k).reduce((n,r)=>n+Number(r.ticketCount||0),0)+'</td><td>'+rupiah(g[k])+'</td></tr>').join('')+'</tbody></table></div>':'Belum ada data harian.');}
 else if(recapMode==='weekly'){const g={};list.forEach(r=>{const k=dateKey(weekStart(r.date));g[k]=(g[k]||0)+Number(r.amount||0);});const keys=Object.keys(g).sort((a,b)=>b.localeCompare(a));html='<div class="recap-total">Total tahun '+currentYear+': '+rupiah(sum(list))+'</div>'+(keys.length?'<div class="tablewrap"><table><thead><tr><th>Periode (Senin–Minggu)</th><th>Nominal Retribusi</th></tr></thead><tbody>'+keys.map(k=>{const e=new Date(k+'T00:00:00');e.setDate(e.getDate()+6);return '<tr><td>'+new Date(k+'T00:00:00').toLocaleDateString('id-ID')+' – '+e.toLocaleDateString('id-ID')+'</td><td>'+rupiah(g[k])+'</td></tr>';}).join('')+'</tbody></table></div>':'Belum ada data mingguan.');}
 else{const t=months.map((m,i)=>sum(list.filter(r=>Number(r.date.slice(5,7))===i+1)));html='<div class="recap-total">TOTAL TAHUN '+currentYear+': '+rupiah(sum(list))+'</div><div class="tablewrap"><table><thead><tr><th>Bulan</th><th>Jumlah Tiket</th><th>Nominal Retribusi</th></tr></thead><tbody>'+months.map((m,i)=>'<tr><td>'+m+'</td><td>'+list.filter(r=>Number(r.date.slice(5,7))===i+1).reduce((n,r)=>n+Number(r.ticketCount||0),0)+'</td><td>'+rupiah(t[i])+'</td></tr>').join('')+'</tbody></table></div>';}
 document.getElementById('categoryRecap').innerHTML=html;}
-function renderCategoryHistory(){const list=records.filter(r=>r.category===activeCategory).sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('categoryHistory').innerHTML=list.length?list.map(r=>{const meta=r.ticketStart!=null?'Seri tiket: '+r.ticketStart+'–'+r.ticketEnd+' · '+(r.ticketCount||0)+' tiket × '+rupiah(r.ticketPrice):'Data lama · input nominal manual';return '<div class="record"><div><strong>'+new Date(r.date+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})+'</strong><span class="ticket-meta">'+meta+'</span></div><div style="text-align:right"><div class="amount">'+rupiah(r.amount)+'</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord(\''+r.id+'\')">Edit</button><button class="smallbtn" onclick="deleteRecord(\''+r.id+'\')">Hapus</button></div></div></div>';}).join(''):'Belum ada data pendapatan untuk jenis retribusi ini.'}
+function renderCategoryHistory(){const list=records.filter(r=>r.category===activeCategory&&(activeCategory!==5||r.roroType===activeRoroType)).sort((a,b)=>b.date.localeCompare(a.date));document.getElementById('categoryHistory').innerHTML=list.length?list.map(r=>{const meta=r.ticketStart!=null?'Seri tiket: '+r.ticketStart+'–'+r.ticketEnd+' · '+(r.ticketCount||0)+' tiket × '+rupiah(r.ticketPrice):'Data lama · input nominal manual';return '<div class="record"><div><strong>'+new Date(r.date+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'})+'</strong><span class="ticket-meta">'+meta+'</span></div><div style="text-align:right"><div class="amount">'+rupiah(r.amount)+'</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord(\''+r.id+'\')">Edit</button><button class="smallbtn" onclick="deleteRecord(\''+r.id+'\')">Hapus</button></div></div></div>';}).join(''):'Belum ada data pendapatan untuk jenis retribusi ini.'}
 function showReport(){renderReport();show('report')}
 function renderReport() {
     document.getElementById('reportYear').textContent = currentYear;
@@ -224,13 +236,13 @@ function renderReport() {
     document.getElementById('annualDetails').innerHTML = detail.length
         ? '<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Jenis Retribusi</th><th>Nominal</th></tr></thead><tbody>' +
           detail.map(r =>
-              `<tr><td>${new Date(r.date + 'T00:00:00').toLocaleDateString('id-ID')}</td><td>${categories[r.category]}</td><td>${rupiah(r.amount)}</td></tr>`
+              `<tr><td>${new Date(r.date + 'T00:00:00').toLocaleDateString('id-ID')}</td><td>${recordCategoryName(r)}</td><td>${rupiah(r.amount)}</td></tr>`
           ).join('') +
           '</tbody></table></div>'
         : 'Belum ada transaksi yang tersimpan.';
 }
 function showData(){renderAllHistory();show('data')}
-function renderAllHistory(){let list=records.slice().sort((a,b)=>b.date.localeCompare(a.date)||a.category-b.category);document.getElementById('allHistory').innerHTML=list.length?list.map(r=>`<div class="record"><div><strong>${esc(categories[r.category])}</strong><span class="muted">${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID')}</span></div><div style="text-align:right"><div class="amount">${rupiah(r.amount)}</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord('${r.id}')">Edit</button><button class="smallbtn" onclick="deleteRecord('${r.id}')">Hapus</button></div></div></div>`).join(''):'Belum ada data.'}
+function renderAllHistory(){let list=records.slice().sort((a,b)=>b.date.localeCompare(a.date)||a.category-b.category);document.getElementById('allHistory').innerHTML=list.length?list.map(r=>`<div class="record"><div><strong>${esc(recordCategoryName(r))}</strong><span class="muted">${new Date(r.date+'T00:00:00').toLocaleDateString('id-ID')}</span></div><div style="text-align:right"><div class="amount">${rupiah(r.amount)}</div><div class="actions" style="justify-content:flex-end;margin-top:5px"><button class="smallbtn" onclick="editRecord('${r.id}')">Edit</button><button class="smallbtn" onclick="deleteRecord('${r.id}')">Hapus</button></div></div></div>`).join(''):'Belum ada data.'}
 function printReport(){if(window.AndroidPrint&&window.AndroidPrint.print)window.AndroidPrint.print();else window.print()}
 function exportJSON() {
     let all = {};
