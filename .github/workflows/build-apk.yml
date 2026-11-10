@@ -4,7 +4,7 @@ name: Build APK Android
 on:
   workflow_dispatch:
   push:
-    branches: [ main, dashboard-maritim-2026 ]
+    branches: [ main, dashboard-maritim-2026, pengembangan-roro-matak-dashboard ]
 
 permissions:
   contents: read
