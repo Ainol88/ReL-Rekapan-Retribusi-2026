@@ -12,7 +12,7 @@
 <body>
 <header class="brand-header"><div class="brand-inner"><div class="brand-mark"><svg viewBox="0 0 120 100"><path d="M13 67h94L92 84H34z" fill="#f6b928"/><path d="M19 59h82L84 76H35z" fill="#fff"/><path d="M45 27h34l10 29H34z" fill="#e8f7ff"/><path d="M52 16h20v12H52z" fill="#fff"/><path d="M62 7v10" stroke="#fff" stroke-width="3"/><path d="M8 88c18-8 29 8 47 0s29 8 47 0" fill="none" stroke="#43c8ed" stroke-width="5" stroke-linecap="round"/></svg></div><div class="brand-copy"><small>DINAS PERHUBUNGAN DAN LINGKUNGAN HIDUP</small><h1>UPT PENGELOLAAN<br><b>TRANSPORTASI</b></h1><p>REKAPAN RETRIBUSI JASA KEPELABUHANAN · 2026</p></div></div></header>
 <div class="wrap">
-<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="document.getElementById('importFile').click()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
+<section id="home"><div class="dashboard-hero"><div class="hero-line"><span class="hero-icon">⚓</span><div><div class="eyebrow">DASHBOARD PENDAPATAN</div><h2>TOTAL PENDAPATAN GABUNGAN</h2><p>7 RETRIBUSI · TAHUN <span id="homeYear">2026</span></p></div></div><div class="total" id="homeTotal">Rp0</div><div class="hero-line"><span><b id="homeCount">0</b> catatan tersimpan</span><label style="margin-left:auto;color:white">Tahun <select id="yearSelect" onchange="changeYear(this.value)" style="width:auto;padding:6px"></select></label></div></div><h2>⚓ Menu Retribusi</h2><div id="categoryMenu" class="grid"></div><div class="dashboard-tools"><button class="tool-button" onclick="showReport()"><span>▤</span>Cetak PDF</button><button class="tool-button" onclick="exportJSON()"><span>⬇</span>Backup Data</button><button class="tool-button" onclick="showData()"><span>↻</span>Riwayat Data</button><button class="tool-button" onclick="requestRestore()"><span>⬆</span>Restore Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div><div class="dashboard-footer">🌊 MELAYANI DENGAN INTEGRITAS ⚓</div></section>
 <section id="entry" class="hidden">
  <button class="back" onclick="goHome()">← Kembali ke menu utama</button>
  <div class="card"><div class="topline"><h2 id="entryTitle">Input Pendapatan</h2><span class="pill" id="entryYear">2026</span></div><form id="entryForm">
@@ -36,7 +36,7 @@
  <div class="card"><div class="topline"><h2>Laporan Tahunan <span id="reportYear">2026</span></h2><span class="pill">JANUARI–DESEMBER</span></div><div class="muted">Rekap pendapatan seluruh jenis retribusi. Gunakan tombol Cetak / Simpan PDF untuk membuat dokumen.</div><div class="total" id="reportTotal">Rp0</div><div class="tablewrap" id="annualTable"></div><div class="actions noprint"><button class="primary" onclick="printReport()">🖨 Cetak / Simpan PDF</button><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button></div><div class="notice noprint">Pada pilihan printer di HP/komputer, pilih “Simpan sebagai PDF” untuk menyimpan laporan dalam format PDF.</div></div>
  <div class="card"><h2>Rincian transaksi harian</h2><div id="annualDetails" class="report-detail"></div></div>
 </section>
-<section id="data" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>Riwayat seluruh data</h2><div id="allHistory"></div><div class="actions"><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button><button class="secondary" onclick="document.getElementById('importFile').click()">⬆ Pulihkan Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div></div></section>
+<section id="data" class="hidden"><button class="back" onclick="goHome()">← Kembali ke menu utama</button><div class="card"><h2>Riwayat seluruh data</h2><div id="allHistory"></div><div class="actions"><button class="secondary" onclick="exportJSON()">⬇ Cadangkan Data</button><button class="secondary" onclick="requestRestore()">⬆ Pulihkan Data</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(event)"></div></div></section>
 </div>
 <script>
 const categories=['JASA PARKIR','JASA PELABUHAN SRI SIANTAN','JASA PELABUHAN PADANG MELANG (JEMAJA)','JASA PELABUHAN ANTANG','JASA PELABUHAN KAMPUNG BARU','JASA PELABUHAN RORO MATAK','JASA TAMBAT PELABUHAN RORO MATAK'];
@@ -234,101 +234,44 @@ function renderAllHistory(){let list=records.slice().sort((a,b)=>b.date.localeCo
 function printReport(){if(window.AndroidPrint&&window.AndroidPrint.print)window.AndroidPrint.print();else window.print()}
 function exportJSON() {
     let all = {};
-
-    try {
-        all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    } catch (e) {
-        all = {};
-    }
-
-    // Pastikan data tahun yang sedang dibuka ikut tersimpan
+    try { all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (e) { all = {}; }
     all[String(currentYear)] = records;
-
-    let blob = new Blob(
-        [JSON.stringify(all, null, 2)],
-        {type: 'application/json'}
-    );
-
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'cadangan_seluruh_tahun_retribusi.json';
-    a.click();
-
-    URL.revokeObjectURL(a.href);
+    const json = JSON.stringify(all, null, 2);
+    if (window.AndroidBackup && typeof window.AndroidBackup.saveBackup === 'function') { window.AndroidBackup.saveBackup(json); return; }
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'cadangan_seluruh_tahun_retribusi.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function requestRestore() {
+    if (window.AndroidBackup && typeof window.AndroidBackup.openRestorePicker === 'function') { window.AndroidBackup.openRestorePicker(); return; }
+    const picker = document.getElementById('importFile'); picker.value = ''; picker.click();
 }
 function importJSON(e) {
-    let f = e.target.files[0];
-    if (!f) return;
-
-    let reader = new FileReader();
-
-    reader.onload = () => {
+    const file = typeof e === 'string' ? null : (e && e.target && e.target.files ? e.target.files[0] : null);
+    const raw = typeof e === 'string' ? e : null;
+    if (!file && raw === null) return;
+    const process = content => {
         try {
-            let d = JSON.parse(reader.result);
-            let imported = {};
-
-            // Mendukung format backup lama
-            if (Number.isInteger(d.year) && Array.isArray(d.records)) {
-                imported[String(d.year)] = d.records;
-            } else {
-                // Mendukung format backup semua tahun
-                imported = d;
+            const d = JSON.parse(content); let imported = {};
+            if (Number.isInteger(d.year) && Array.isArray(d.records)) imported[String(d.year)] = d.records; else imported = d;
+            const years = Object.keys(imported); if (!years.length) throw Error('Kosong');
+            for (const year of years) {
+                if (!/^\\d{4}$/.test(year) || Number(year) < 2024 || !Array.isArray(imported[year]) || imported[year].some(r => !Number.isInteger(r.category) || r.category < 0 || r.category > 6 || typeof r.date !== 'string' || !r.date.startsWith(year + '-') || !Number.isFinite(Number(r.amount)) || Number(r.amount) < 0)) throw Error('Format tidak valid');
             }
-
-            let years = Object.keys(imported);
-
-            if (years.length === 0) throw Error();
-
-            for (let year of years) {
-                if (
-                    !/^\d{4}$/.test(year) ||
-                    Number(year) < 2024 ||
-                    !Array.isArray(imported[year]) ||
-                    imported[year].some(r =>
-                        !Number.isInteger(r.category) ||
-                        r.category < 0 ||
-                        r.category > 6 ||
-                        typeof r.date !== 'string' ||
-                        !r.date.startsWith(year + '-') ||
-                        !Number.isFinite(Number(r.amount)) ||
-                        Number(r.amount) < 0
-                    )
-                ) {
-                    throw Error();
-                }
-            }
-
             if (!confirm('Pulihkan backup untuk tahun: ' + years.join(', ') + '? Data tahun tersebut akan diganti.')) return;
-
-            let all = {};
-
-            try {
-                all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-            } catch (err) {
-                all = {};
-            }
-
-            Object.assign(all, imported);
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-
-            records = loadYear(currentYear);
-
-            renderHome();
-            renderCategoryHistory();
-            renderCategoryRecap();
-            renderAllHistory();
-
+            let all = {}; try { all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (err) { all = {}; }
+            Object.assign(all, imported); localStorage.setItem(STORAGE_KEY, JSON.stringify(all)); records = loadYear(currentYear);
+            renderHome(); renderCategoryHistory(); renderCategoryRecap(); renderAllHistory();
             alert('Backup berhasil dipulihkan untuk tahun: ' + years.join(', '));
-
-        } catch (err) {
-            alert('File cadangan tidak valid.');
-        }
+        } catch (err) { alert('File cadangan tidak valid atau rusak.'); }
     };
-
-    reader.readAsText(f);
-    e.target.value = '';
+    if (raw !== null) process(raw);
+    else { const reader = new FileReader(); reader.onload = () => process(reader.result); reader.onerror = () => alert('File backup tidak dapat dibaca.'); reader.readAsText(file); e.target.value = ''; }
 }
+window.onBackupFileLoaded = function(json) { importJSON(json); };
+window.onBackupSaved = function(ok) { alert(ok ? 'Backup data berhasil disimpan.' : 'Backup data gagal disimpan.'); };
+
 setupParkirDate();
 initYearSelect();
 renderHome();
