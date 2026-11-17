@@ -257,7 +257,7 @@ function importJSON(e) {
             if (Number.isInteger(d.year) && Array.isArray(d.records)) imported[String(d.year)] = d.records; else imported = d;
             const years = Object.keys(imported); if (!years.length) throw Error('Kosong');
             for (const year of years) {
-                if (!/^\\d{4}$/.test(year) || Number(year) < 2024 || !Array.isArray(imported[year]) || imported[year].some(r => !Number.isInteger(r.category) || r.category < 0 || r.category > 6 || typeof r.date !== 'string' || !r.date.startsWith(year + '-') || !Number.isFinite(Number(r.amount)) || Number(r.amount) < 0)) throw Error('Format tidak valid');
+                if ((year.length !== 4 || Array.from(year).some(ch => ch < '0' || ch > '9')) || Number(year) < 2024 || !Array.isArray(imported[year]) || imported[year].some(r => !Number.isInteger(r.category) || r.category < 0 || r.category > 6 || typeof r.date !== 'string' || !r.date.startsWith(year + '-') || !Number.isFinite(Number(r.amount)) || Number(r.amount) < 0)) throw Error('Format tidak valid');
             }
             if (!confirm('Pulihkan backup untuk tahun: ' + years.join(', ') + '? Data tahun tersebut akan diganti.')) return;
             let all = {}; try { all = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (err) { all = {}; }
