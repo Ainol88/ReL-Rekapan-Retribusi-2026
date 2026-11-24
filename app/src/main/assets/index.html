@@ -165,7 +165,7 @@ function openCategory(i) {
 }
 function renderRoroSubmenu() {
     document.getElementById('roroSubmenuGrid').innerHTML = roroTypes.map((t,i) => {
-        const list = records.filter(r => r.category === 5 && r.ticketType === t.name);
+        const list = records.filter(r => r.category === 5 && (r.ticketType === t.name || (!r.ticketType && t.name === 'PAS PENUMPANG')));
         return '<button class="menu" onclick="selectRoroType('+i+')"><span class="num">'+(i+1)+'</span><span class="menu-info"><span class="menu-label">'+t.name+'</span><span class="menu-annual">Tarif: '+rupiah(t.price)+' · Pendapatan tahun '+currentYear+': <b>'+rupiah(sum(list))+'</b></span></span><span class="menu-arrow">›</span></button>';
     }).join('');
 }
@@ -203,7 +203,7 @@ let recapMode='daily';
 function setRecapMode(mode){recapMode=mode;['daily','weekly','annual'].forEach(m=>{const e=document.getElementById('tab'+m[0].toUpperCase()+m.slice(1));if(e)e.classList.toggle('active',m===mode);});renderCategoryRecap();}
 function weekStart(date){const d=new Date(date+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
 function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function renderCategoryRecap(){const list=records.filter(r=>r.category===activeCategory && (activeCategory!==5 || r.ticketType===activeRoroType));let html='';
+function renderCategoryRecap(){const list=records.filter(r=>r.category===activeCategory && (activeCategory!==5 || r.ticketType===activeRoroType || (!r.ticketType && activeRoroType==='PAS PENUMPANG')));let html='';
 if(recapMode==='daily'){const g={};list.forEach(r=>g[r.date]=(g[r.date]||0)+Number(r.amount||0));const keys=Object.keys(g).sort((a,b)=>b.localeCompare(a));html='<div class="recap-total">Total retribusi kategori ini: '+rupiah(sum(list))+'</div>'+(keys.length?'<div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Jumlah Tiket</th><th>Nominal Retribusi</th></tr></thead><tbody>'+keys.map(k=>'<tr><td>'+new Date(k+'T00:00:00').toLocaleDateString('id-ID')+'</td><td>'+list.filter(r=>r.date===k).reduce((n,r)=>n+Number(r.ticketCount||0),0)+'</td><td>'+rupiah(g[k])+'</td></tr>').join('')+'</tbody></table></div>':'Belum ada data harian.');}
 else if(recapMode==='weekly'){const g={};list.forEach(r=>{const k=dateKey(weekStart(r.date));g[k]=(g[k]||0)+Number(r.amount||0);});const keys=Object.keys(g).sort((a,b)=>b.localeCompare(a));html='<div class="recap-total">Total tahun '+currentYear+': '+rupiah(sum(list))+'</div>'+(keys.length?'<div class="tablewrap"><table><thead><tr><th>Periode (Senin–Minggu)</th><th>Nominal Retribusi</th></tr></thead><tbody>'+keys.map(k=>{const e=new Date(k+'T00:00:00');e.setDate(e.getDate()+6);return '<tr><td>'+new Date(k+'T00:00:00').toLocaleDateString('id-ID')+' – '+e.toLocaleDateString('id-ID')+'</td><td>'+rupiah(g[k])+'</td></tr>';}).join('')+'</tbody></table></div>':'Belum ada data mingguan.');}
 else{const t=months.map((m,i)=>sum(list.filter(r=>Number(r.date.slice(5,7))===i+1)));html='<div class="recap-total">TOTAL TAHUN '+currentYear+': '+rupiah(sum(list))+'</div><div class="tablewrap"><table><thead><tr><th>Bulan</th><th>Jumlah Tiket</th><th>Nominal Retribusi</th></tr></thead><tbody>'+months.map((m,i)=>'<tr><td>'+m+'</td><td>'+list.filter(r=>Number(r.date.slice(5,7))===i+1).reduce((n,r)=>n+Number(r.ticketCount||0),0)+'</td><td>'+rupiah(t[i])+'</td></tr>').join('')+'</tbody></table></div>';}
